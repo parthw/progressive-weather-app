@@ -1,48 +1,44 @@
-![fooo](https://user-images.githubusercontent.com/9766310/36504143-7796099e-178a-11e8-90df-5a1ed43a65b3.png)
+# Progressive Weather App
 
-# [Progressive Weather App](https://jimmerioles.github.io/progressive-weather-app/)
-A local weather app that fetches weather forecast from Openweathermap.org. A Progressive Web App built with Vue.js.
+### About
 
-## Features
-* Progressive Web App
-* Lighthouse score average: 95/100
-* Works offline
-* Add to homescreen (mobile)
-* Different theme depending on time (day or night)
-* Different weather icon depending on weather
-* Click to toggle temperature scale (Celcius or Fahrenheit)
+This repository is using vue framework to create frontend files.
+<br>These frontend files are served using nginx. The minimal nginx configuration is in deployment-configurations directory.
 
-## Built With
-* Vue.js
-* Modern Javascript (ECMAScript2015+)
+### Image creation
 
-## Changelog
+This repository is using Dockerfile to build the npm package and create the image.
+<br>Command used to create image execute is -
+<br>`docker build -t frontend-server .`
 
-Please see [CHANGELOG][link-changelog] for more information on what has changed recently.
+### Kubernetes Deployment File
 
-## Contributing
+Kubernetes deployment file is present in deployment-configurations directory. The deployment comprises of
 
-Open for suggestions and requests. Please request through [issue][link-issue] or [pull requests][link-pull-request].
+- 2 replicas (To prevent single point of failure)
+- resource limts (To protect node from crashing and for hpa)
+- startup, readiness and liveness probes (To restart the pod or accept the requests when required)
+- affinity and tolerations (To deploy on specific node)
 
-## Security
+### Kubernetes Service File
 
-If you discover any security related issues, please email jimwisleymerioles@gmail.com instead of using the issue tracker.
+Kubernetes service file is present in deployment-configurations directory. The service is having a annotation of aws loadbalancer. By default it will create a Classic Loadbalancer.
+This service file is using label selector as `app: frontend-server` which is same for deployment.yaml
 
-## Credits
+### Kubernetes Horizontal Pod Autoscalar
 
-- [Jim Merioles][link-author]
+Kubernetes HPA file is also present in deployment-configurations directory. The purpose of this configuration is to increase the number of pods when avaerage CPU utilization reaches to 75%.
 
-### Want to show some :heart:?
+### Jenkinsfile
 
-Let's find Satoshi Nakamoto! | or let's have a :coffee:
------------- | ------------
-![Donate Bitcoin][ico-bitcoin] | ![Donate Ethereum][ico-ethereum]
+Jenkinsfile is present in root directory illustrating the deployment pipeline using Jenkins.
 
+## Further enchancements
 
-[ico-bitcoin]: https://img.shields.io/badge/Bitcoin-1KBT3Mzsr2dZqhQqNYx4gum8Yuyd61UzNk-blue.svg?style=flat-square
-[ico-ethereum]: https://img.shields.io/badge/Ethereum-0x7896E9C4118e495Eb7001a847BBFA3C29Dfc69d9-blue.svg?style=flat-square
+Further enchancements that can be added as per devops methodologies are
 
-[link-author]: https://twitter.com/jimmerioles
-[link-changelog]: https://github.com/jimmerioles/progressive-weather-app/releases
-[link-issue]: https://github.com/jimmerioles/progressive-weather-app/issues/new
-[link-pull-request]: https://github.com/jimmerioles/progressive-weather-app/pull/new/master
+- Implementation of sidecar like fluentbit to send nginx logs
+- Implementation of another sidecar to send metrics to prometheus or datadog
+- If this deployment is required to be executed in multiple environments, kustomize should be preferred to maintain kubernetes configuration files.
+- Enable SSL on loadbalancer using ACM
+- Implementation of network policies to restrict the ingress and egress traffic
