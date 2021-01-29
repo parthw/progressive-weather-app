@@ -2,6 +2,11 @@
 pipeline {
 
   agent any
+  
+  environment {
+    COMMIT_ID= "${sh(script:'git rev-parse --short HEAD', returnStdout: true).trim()}"
+
+  }
 
   parameters {
     string(defaultValue: "master", description: 'Which Git Branch to checkout?', name: 'branch')
@@ -21,13 +26,11 @@ pipeline {
     
       stage("Build and Push") {
         steps {
-          sh "git rev-parse --short HEAD > .git/commit-id"
           script {
-            commit_id = readFile('.git/commit-id').trim()
             docker.withRegistry('https://XXX', 'ecr-credXXXX') {
-	            customImage = docker.build("XXXX/something/${env.JOB_NAME}:${commit_id}", ".")
+              customImage = docker.build("XXXX/something/${env.JOB_NAME}:${env.COMMIT_ID}", ".")
               customImage.push("latest")
-              customImage.push("${commit_id}")
+              customImage.push("${env.COMMIT_ID}")
             }
           }
         }
@@ -35,6 +38,7 @@ pipeline {
     
       stage('Deploy') {
         steps {
+            sh "sed -i 's/VERSION/${env.COMMIT_ID}/g' deployment-configurations/deployment.yaml"
             sh "kubectl apply -f deployment-configurations/deployment.yaml"
             sh "kubectl apply -f deployment-configurations/hpa.yaml"
             sh "kubectl apply -f deployment-configurations/service.yaml"

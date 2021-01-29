@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend-server
-          image: wparth/frontend-server:latest
+          image: <ECR-URL>/frontend-server:VERSION
           imagePullPolicy: Always
           
           resources:
