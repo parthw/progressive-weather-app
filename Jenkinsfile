@@ -2,11 +2,6 @@
 pipeline {
 
   agent any
-  
-  environment {
-    COMMIT_ID= "${sh(script:'git rev-parse --short HEAD', returnStdout: true).trim()}"
-
-  }
 
   parameters {
     string(defaultValue: "master", description: 'Which Git Branch to checkout?', name: 'branch')
@@ -21,6 +16,10 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout([$class: 'GitSCM', branches: [[name: "${params.branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'XXX', url: 'https://github.com/parthw/weather-app']]])
+        sh "git rev-parse --short HEAD > .git/commit-id"
+      }
+      script {
+        env.commit_id = readFile('.git/commit-id').trim()
       }
     }
     
@@ -28,9 +27,9 @@ pipeline {
         steps {
           script {
             docker.withRegistry('https://XXX', 'ecr-credXXXX') {
-              customImage = docker.build("XXXX/something/${env.JOB_NAME}:${env.COMMIT_ID}", ".")
+              customImage = docker.build("XXXX/something/${env.JOB_NAME}:${env.commit_id}", ".")
               customImage.push("latest")
-              customImage.push("${env.COMMIT_ID}")
+              customImage.push("${env.commit_id}")
             }
           }
         }
@@ -38,7 +37,7 @@ pipeline {
     
       stage('Deploy') {
         steps {
-            sh "sed -i 's/VERSION/${env.COMMIT_ID}/g' deployment-configurations/deployment.yaml"
+            sh "sed -i 's/VERSION/${env.commit_id}/g' deployment-configurations/deployment.yaml"
             sh "kubectl apply -f deployment-configurations/deployment.yaml"
             sh "kubectl apply -f deployment-configurations/hpa.yaml"
             sh "kubectl apply -f deployment-configurations/service.yaml"
