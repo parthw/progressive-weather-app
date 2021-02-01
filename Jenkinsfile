@@ -4,7 +4,7 @@ pipeline {
   agent any
 
   parameters {
-    string(defaultValue: "master", description: 'Which Git Branch to checkout?', name: 'branch')
+    gitParameter branchFilter: 'origin.*/(.*)', defaultValue: 'master', name: 'branch', type: 'PT_BRANCH', useRepository: 'https://github.com/parthw/weather-app'
   }
 
   options {
@@ -16,10 +16,9 @@ pipeline {
     stage('Checkout') {
       steps {
         checkout([$class: 'GitSCM', branches: [[name: "${params.branch}"]], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'XXX', url: 'https://github.com/parthw/weather-app']]])
-        sh "git rev-parse --short HEAD > .git/commit-id"
       }
       script {
-        env.commit_id = readFile('.git/commit-id').trim()
+        env.commit_id = "${sh(script:'git rev-parse --short HEAD', returnStdout: true).trim()}"
       }
     }
     
