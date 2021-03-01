@@ -33,12 +33,6 @@ Kubernetes HPA file is also present in deployment-configurations directory. The 
 
 Jenkinsfile is present in root directory illustrating the deployment pipeline using Jenkins.
 
-## Further enchancements
+### TektonCd
 
-Further enchancements that can be added as per devops methodologies are
-
-- Implementation of sidecar like fluentbit to send nginx logs
-- Implementation of another sidecar to send metrics to prometheus or datadog
-- If this deployment is required to be executed in multiple environments, kustomize should be preferred to maintain kubernetes configuration files.
-- Enable SSL on loadbalancer using ACM
-- Implementation of network policies to restrict the ingress and egress traffic
+In tektoncd-deployment folder, tektoncd configurations are present. Tekton is cloudnative solution and with these configurations, weather-app can be deployed using tektoncd also.

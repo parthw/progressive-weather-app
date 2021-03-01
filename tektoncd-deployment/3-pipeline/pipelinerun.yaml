@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineRun
+metadata:
+  name: weather-app-pipeline-run
+  namespace: cicd-space
+spec:
+  serviceAccountName: docker-cred-acc
+  timeout: "1h30m30s"
+  pipelineRef:
+    name: weather-app-pipeline
+  resources:
+    - name: weather-app-git
+      resourceRef:
+        name: weather-app-git
+    - name: weather-app-image
+      resourceRef:
+        name: weather-app-image
+  params:
+    - name: DEPLOY_SPACE
+      value: 'default'

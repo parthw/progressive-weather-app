@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: deploy-nodejs-app
+  namespace: cicd-space
+spec:
+  inputs:
+    resources:
+      - name: source
+        type: git
+    params:
+      - name: DEPLOY_SPACE
+        description: The environment where you deploy the app
+        default: 'default'
+        type: string
+  steps:
+    - name: deploy-resources
+      image: lachlanevenson/k8s-kubectl
+      command: ["kubectl"]
+      args:
+        - "apply"
+        - "-f"
+        - "$(inputs.resources.source.path)/deployment-configurations/deployment.yaml"
+        - "-n"
+        - "$(inputs.params.DEPLOY_SPACE)"
+    - name: deploy-application
+      image: lachlanevenson/k8s-kubectl
+      command: ["kubectl"]
+      args:
+        - "rollout"
+        - "restart"
+        - "deployment/frontend-server"
+        - "-n"
+        - "$(inputs.params.DEPLOY_SPACE)"
+

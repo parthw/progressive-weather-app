@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: build-nodejs-app
+  namespace: cicd-space
+spec:
+  inputs:
+    resources:
+      - name: source
+        type: git
+  outputs:
+    resources:
+      - name: image
+        type: image
+  stepTemplate:
+  steps:
+    - name: create-image-and-push
+      image: gcr.io/kaniko-project/executor
+      env:
+        - name: "DOCKER_CONFIG"
+          value: "/tekton/home/.docker/"
+      command:
+        - /kaniko/executor
+      args:
+        - "--dockerfile=./Dockerfile"
+        - "--destination=$(outputs.resources.image.url)"
+        - "--context=$(inputs.resources.source.path)/"

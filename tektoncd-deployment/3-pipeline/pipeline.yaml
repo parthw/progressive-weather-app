@@ -1,0 +1,51 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: weather-app-pipeline
+  namespace: cicd-space
+spec:
+  resources:
+    - name: weather-app-git
+      type: git
+    - name: weather-app-image
+      type: image
+
+  params:
+    - name: DEPLOY_SPACE
+      description: The namespace where you deploy the app
+      default: "default"
+      type: string
+
+  tasks:
+    - name: build
+      taskRef:
+        name: build-nodejs-app
+      resources:
+        inputs:
+          - name: source
+            resource: weather-app-git
+        outputs:
+          - name: image
+            resource: weather-app-image
+
+    - name: deploy
+      taskRef:
+        name: deploy-nodejs-app
+      runAfter:
+        - build
+      params:
+        - name: DEPLOY_SPACE
+          value: "$(params.DEPLOY_SPACE)"
+      resources:
+        inputs:
+          - name: source
+            resource: weather-app-git
+
+    - name: test
+      taskRef:
+        name: test-nodejs-app
+      runAfter:
+        - deploy
+      params:
+        - name: DEPLOY_SPACE
+          value: "$(params.DEPLOY_SPACE)"

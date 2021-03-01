@@ -1,0 +1,10 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: weather-app-image
+  namespace: cicd-space
+spec:
+  type: image
+  params:
+    - name: url
+      value: docker.io/wparth/tekton-weather-app:latest
